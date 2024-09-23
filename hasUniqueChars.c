@@ -144,7 +144,6 @@ unsigned long makeBitMask(char chr) {
   for(int i = 0; i < chr; i++) {
     ret_long *= 2;
   }
-
   // printf("that bitmask is: %s \n", ulong_to_bin_str(ret_long));
 
   return ret_long;

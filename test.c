@@ -47,6 +47,26 @@ int main() {
   ok = hasUniqueChars(string3);
   assert(!ok);
 
+  // Test 5: Tests all printable characters with multiple spaces - should succeed
+  strcpy(string3, "abcdefghijklmnopqr   stuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$^&*()_+-={}[]|:;<>,.?/~");
+  ok = hasUniqueChars(string3);
+  assert(ok);
+
+  // Test 6: Tests duplicate low characters - should fail
+  strcpy(string3, "! abcdefghij !");
+  ok = hasUniqueChars(string3);
+  assert(!ok);
+
+  // Test 7: Tests duplicate high characters (~) - should fail
+  strcpy(string3, "~ fghijCDEFGHIJKLMNOPQRSTUVWXYZ!@#$^&*()_+-={}[]|:;<>,.?/~");
+  ok = hasUniqueChars(string3);
+  assert(!ok);
+
+  // Test 7: Shouldn't fail
+  strcpy(string3, "Fredwyck tha sixf ROX!");
+  ok = hasUniqueChars(string3);
+  assert(ok);
+
 
   // Test that it gives an error when given non-printing characters
   strcpy(string3, "a b cc\n");
@@ -55,7 +75,7 @@ int main() {
   strcpy(string3, "a b cc\r");
   ok = hasUniqueChars(string3);
 
-  strcpy(string3, "a \0 b cc\n");
+  strcpy(string3, "a \t b cc");
   ok = hasUniqueChars(string3);
   
   return 0;
