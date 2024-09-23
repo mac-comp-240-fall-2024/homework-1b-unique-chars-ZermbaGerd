@@ -1,5 +1,7 @@
 /*
- * TODO: Add an appropriate descriptive comment here
+ * Tests the functions in hasUniqueChars.c
+
+Author: Gavin
  */
 
 #include <stdio.h>    // printf
@@ -15,52 +17,66 @@ bool hasUniqueChars(char * inputStr);
 int main() {
 
   // ------------------------------------------------------------
-  // Examples of declaring string constants
-  /* Example 1 */
-  char string1[] = "A string declared as an array.\n";
 
-  /* Example 2 */
-  char *string2 = "A string declared as a pointer.\n";
-
-  /* Example 3 */
   char string3[128];   // can copy in up to 127 characters
                        // chose 128 because it is a multiple of 8 bytes
-  strcpy(string3, "A string constant copied in.\n");
 
-  // You can uncomment these to see how the strings were initialized above.
-  // Then you can comment these out again once you see that the 
-  // strings were created correctly
-  // printf ("%s", string1);
-  // printf ("%s", string2);
-  // printf ("%s", string3);
-
+  hasUniqueChars(string3);
   // -------------------------------------------------------------
   // Thorough and exhaustive tests of hasUniqueChars()  
+  
   bool ok;    // holds the result of hasUniqueChars(); used in asserts
   
-  // Test 1: a test case that should return false because characters are duplicated
+  // Test 1: should fail, because of duplicated characters
   strcpy(string3, "This should fail (l and s and i and h)");
   ok = hasUniqueChars(string3);
   assert(!(ok));
   
-  // Test 2: This should be true and not fail, but won't work until you
-  // complete the hasUniqueChars() function
+  // Test 2: This should be true and not fail
   strcpy(string3, "abcdefghij");
   ok = hasUniqueChars(string3);
   assert(ok);
+
+  // Test 3: Tests all printable characters - should succeed
+  strcpy(string3, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$^&*()_+-={}[]|:;<>,.?/~");
+  ok = hasUniqueChars(string3);
+  assert(ok);
   
-  // TODO: add your tests here
+  // Test 4: Testing multiple spaces & edge characters - should fail
+  strcpy(string3, "~~aa     !!!!");
+  ok = hasUniqueChars(string3);
+  assert(!ok);
+
+  // Test 5: Tests all printable characters with multiple spaces - should succeed
+  strcpy(string3, "abcdefghijklmnopqr   stuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$^&*()_+-={}[]|:;<>,.?/~");
+  ok = hasUniqueChars(string3);
+  assert(ok);
+
+  // Test 6: Tests duplicate low characters - should fail
+  strcpy(string3, "! abcdefghij !");
+  ok = hasUniqueChars(string3);
+  assert(!ok);
+
+  // Test 7: Tests duplicate high characters (~) - should fail
+  strcpy(string3, "~ fghijCDEFGHIJKLMNOPQRSTUVWXYZ!@#$^&*()_+-={}[]|:;<>,.?/~");
+  ok = hasUniqueChars(string3);
+  assert(!ok);
+
+  // Test 7: Shouldn't fail
+  strcpy(string3, "Fredwyck tha sixf ROX!");
+  ok = hasUniqueChars(string3);
+  assert(ok);
 
 
-
-  // NOTE: if you add a \n to any tests, this should cause the
-  //       exit failure given. Keep this test last so you can check 
-  //       that others pass or fail as you expect them to.
+  // Test that it gives an error when given non-printing characters
   strcpy(string3, "a b cc\n");
   ok = hasUniqueChars(string3);
-  // other examples that should fail that you can place in strings
-  // are \0 or \t or \r
-  // See problem description for more details about escape sequences
+
+  strcpy(string3, "a b cc\r");
+  ok = hasUniqueChars(string3);
+
+  strcpy(string3, "a \t b cc");
+  ok = hasUniqueChars(string3);
   
   return 0;
 }
