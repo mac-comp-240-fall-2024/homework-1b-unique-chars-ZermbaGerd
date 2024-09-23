@@ -1,9 +1,11 @@
 /*
  * hasUniqueChars.c
  * 
- * TODO: replace this line with lines containing a description
+ * Includes functions to check whether there are duplicate characters in any given string. Run that
+ * function with hasUniqueChars. Note that this function fails if the string has any non-printing
+ * characters. This file also has some helper functions and debug functions. 
  * 
- * Author: 
+ * Author: Gavin Davis
  */
 
 #include <stdio.h>  // fprintf, printf
@@ -14,6 +16,9 @@
                       // see https://en.wikibooks.org/wiki/C_Programming/stdbool.h
 
 #include "binary_convert.h"
+
+unsigned long makeBitMask(char chr);
+bool checkCharInCheckbit(unsigned long bitmask, unsigned long checkBit);
 
 
 /*
@@ -32,8 +37,6 @@ void seeBits(unsigned long value, char *debug_text) {
 }
 
 
-// TODO: Read this carefully to see how to loop over characters of a string
-// TODO: (Remove TODOs once you have completed the task they describe)
 /*
  * Given an input string of chars, check for any non-printing
  * characters and print an error and exit if the string has any.
@@ -55,8 +58,9 @@ void checkInvalid(char * inputStr) {
 
 
 /*
- * TODO: Replace this code by a good description this function takes in, does and returns.
- * Include the error conditions that cause it to exit with failure.
+ * This function takes in a string, and returns true if there are no repeated characters in the string.
+ * It returns false if there are any duplicate characters.
+ * This function fails if the passed string has any non-printing characters in it.
  */
 bool hasUniqueChars(char * inputStr) {
   // bail out quickly if any invalid characters
@@ -64,52 +68,98 @@ bool hasUniqueChars(char * inputStr) {
   
   int i;   // loop counter
   
-  // unsigned long can handle 64 different chars in a string
-  // if a bit at a position is 1, then we have seen that character
+  unsigned long checkBitsexcl_amp = 0;  // for checking ! though @ 
   unsigned long checkBitsA_z = 0;   // for checking A through z and {|}~
-  unsigned long checkBitsexcl_amp =0;  // for checking ! though @ 
 
   char nextChar;         // next character in string to check
 
   // -------------------------------------------------------------
-  // This section contains code to display the initial values of checkBitsA_z
-  // and checkBitsexcl_amp, for debugging purposes. 
-  // It also illustrates how to use the seeBits function for debugging.
-  // Printed values should initially be all zeros
-  // TODO: remove or comment out this code when satisfied of function correctness
-  
-  char debug_str_A_z[128];
-  strcpy(debug_str_A_z, "checkBitsA_z before: \n");
-  seeBits(checkBitsA_z, debug_str_A_z);
-  
-  char debug_str_excl_amp[128];
-  strcpy(debug_str_excl_amp, "checkBitsexcl_amp before: \n");
-  seeBits(checkBitsexcl_amp, debug_str_excl_amp);
-  // -------------------------------------------------------------
 
-  // TODO: Declare additional variables you need here
-
+  char bit_mask_char; // the index of the char at 
+  unsigned long bitmask; // the bitmask for the character
   
   for(i = 0; i < strlen(inputStr); i++) {
     nextChar = inputStr[i];
-    // TODO: Add your code here to check nextChar, see if it is a duplicate, and update the checkBits variables
+    //printf("nextChar is %c, with ASCII value %d \n",nextChar,nextChar);
 
-    // -------------------------------------------------------------
-    // Below this are examples of debugging print statements you could use
-    // Move/use as makes sense for you!
-    // Modify to work on checkBitsexcl_amp
-    // TODO: Comment out or remove when your function works correctly
-    printf("nextchar int value: %d\n", nextChar);
-    char char_str[2] = "\0";
-    char_str[0] = nextChar;
-    strcpy(debug_str_A_z, "nextchar: ");
-    strcat(debug_str_A_z, char_str);
-    strcat(debug_str_A_z,", checkBitsA_z: \n");
-    seeBits(checkBitsA_z, debug_str_A_z);
-    // ------------------------------------------------------------- 
+    // check exclamation -> at (that's an at not an ampersand bro)
+    if(nextChar >= 33 && nextChar <= 64) {
+      nextChar = nextChar - 33; // change it to be the index we care about
+
+      bitmask = makeBitMask(nextChar); // make the bit vector for that character
+
+      // check if the index of the current character is already in the bit checker
+      if(checkCharInCheckbit(bitmask, checkBitsexcl_amp)) {
+        // if it is, return false
+        return false;
+      }
+      else {
+        // otherwise, we can run bitwise OR to only add a 1 in the slot the bitmask has
+        checkBitsexcl_amp = checkBitsexcl_amp | bitmask;
+      }
+
+    }
+
+    // check A -> z
+    else if(nextChar >= 65) {   // this is the same shit as above but with a different offset & checkbit
+      nextChar = nextChar - 65;
+
+      // make our bitmask - defined below
+      bitmask = makeBitMask(nextChar);
+
+      // check if the index of the current character is already in the bit checker
+      if(checkCharInCheckbit(bitmask, checkBitsA_z)) {
+        // if it is, it's not a unique string
+        return false;
+      }
+      else {
+        // otherwise, we can run bitwise OR to only add a 1 in the slot the bitmask has
+        checkBitsA_z = checkBitsA_z | bitmask;
+      }
+    }
+    
+    else{
+      // the character is a space and you can ignore it
+      // can afford to ignore non-printing because checkInvalid already accounts for that
+    }
   }
 
   // if through all the characters, then no duplicates found
   return true;
   
+}
+
+/*
+  Makes a bitmask (bit vector) for the given char. 
+  Returns a long with 0's in every slot except the value of the passed character.
+
+  Using the logic that 2^chr should be a long with only a 1 in the slot associated
+  with the number. Would use math.h library for exponents but I couldn't figure out
+  how to compile it well so I just built my own power function.
+*/
+unsigned long makeBitMask(char chr) {
+  // printf("making bitmask for: %c, which has ASCII value %d \n", chr, chr);
+
+  unsigned long ret_long = 1;
+  for(int i = 0; i < chr; i++) {
+    ret_long *= 2;
+  }
+
+  // printf("that bitmask is: %s \n", ulong_to_bin_str(ret_long));
+
+  return ret_long;
+}
+
+
+/* 
+  Checks whether the bitmask overlaps with the given bit vector.
+*/
+bool checkCharInCheckbit(unsigned long bitmask, unsigned long checkBit) {
+      // if there's a 1 in the correct slot for both of them, we've already seen that character
+      if(( checkBit & bitmask) == bitmask) {
+        return true;
+      }
+      else {
+        return false;
+      }
 }
